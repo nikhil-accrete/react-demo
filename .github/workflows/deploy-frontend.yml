@@ -33,13 +33,13 @@ jobs:
           script: |
             echo "🚀 Starting Frontend deployment..."
             
-            cd /var/www/html/react-frontend
+            cd /var/www/html/react-demo
             git pull origin main
             npm ci
             npm run build
-            sudo chown -R www-data:www-data /var/www/html/react-frontend/build
-            sudo chmod -R 755 /var/www/html/react-frontend/build
+            sudo chown -R www-data:www-data /var/www/html/react-demo/build
+            sudo chmod -R 755 /var/www/html/react-demo/build
             sudo systemctl reload nginx
             
             echo "✅ Frontend deployment successful!"
-            echo "🌐 Visit: http://3.111.32.166"
+            echo "🌐 Visit: http://13.203.215.193"
