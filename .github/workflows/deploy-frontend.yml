@@ -36,7 +36,6 @@ jobs:
             echo "🚀 Starting Frontend deployment..."
            
             cd /var/www/html/react-demo
-            sudo chown -fR ubuntu:ubuntu /var/www/html/react-demo
             git pull origin main
             npm ci
             npm run build
