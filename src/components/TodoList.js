@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { todoAPI } from '../services/api';
+import { todoAPI, userAPI } from '../services/api';
 
 const TodoList = () => {
   const [todos, setTodos] = useState([]);
+  const [users, setUsers] = useState([]);
   const [newTodo, setNewTodo] = useState('');
+  const [selectedUser, setSelectedUser] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchTodos();
+    fetchUsers();
   }, []);
 
   const fetchTodos = async () => {
@@ -25,14 +28,24 @@ const TodoList = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const response = await userAPI.getUsers();
+      setUsers(response.data.data);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    }
+  };
+
   const addTodo = async (e) => {
     e.preventDefault();
     if (!newTodo.trim()) return;
 
     try {
-      const response = await todoAPI.createTodo(newTodo);
-      setTodos([...todos, response.data.data]);
+      const response = await todoAPI.createTodo(newTodo, selectedUser || null);
+      setTodos([response.data.data, ...todos]);
       setNewTodo('');
+      setSelectedUser('');
     } catch (err) {
       setError('Failed to add todo');
       console.error(err);
@@ -65,7 +78,7 @@ const TodoList = () => {
 
   return (
     <div className="todo-list">
-      <h2>📝 Todo List</h2>
+      <h2>📝 Todo List (MySQL Powered)</h2>
       
       {error && <div className="error">{error}</div>}
       
@@ -77,6 +90,18 @@ const TodoList = () => {
           placeholder="Add a new todo..."
           className="todo-input"
         />
+        <select
+          value={selectedUser}
+          onChange={(e) => setSelectedUser(e.target.value)}
+          className="user-select"
+        >
+          <option value="">Assign to user (optional)</option>
+          {users.map(user => (
+            <option key={user.id} value={user.id}>
+              {user.name}
+            </option>
+          ))}
+        </select>
         <button type="submit" className="btn-primary">Add Todo</button>
       </form>
 
@@ -89,10 +114,15 @@ const TodoList = () => {
                 checked={todo.completed}
                 onChange={() => toggleTodo(todo.id, todo.completed)}
               />
-              <span className="todo-title">{todo.title}</span>
-              <small className="todo-date">
-                {new Date(todo.createdAt).toLocaleDateString()}
-              </small>
+              <div className="todo-details">
+                <span className="todo-title">{todo.title}</span>
+                {todo.user_name && (
+                  <small className="todo-user">👤 {todo.user_name}</small>
+                )}
+                <small className="todo-date">
+                  📅 {new Date(todo.created_at).toLocaleDateString()}
+                </small>
+              </div>
             </div>
             <button 
               onClick={() => deleteTodo(todo.id)}

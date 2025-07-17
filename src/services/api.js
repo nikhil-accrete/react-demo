@@ -18,6 +18,7 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
     (config) => {
+        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
     },
     (error) => {
@@ -31,19 +32,26 @@ api.interceptors.response.use(
         return response;
     },
     (error) => {
+        console.error("API Error:", error.response?.data || error.message);
         return Promise.reject(error);
     }
 );
 
+// Enhanced Todo API with user assignment
 export const todoAPI = {
     getTodos: () => api.get("/todos"),
-    createTodo: (title) => api.post("/todos", { title }),
+    createTodo: (title, user_id = null) => api.post("/todos", { title, user_id }),
     updateTodo: (id, data) => api.put(`/todos/${id}`, data),
     deleteTodo: (id) => api.delete(`/todos/${id}`),
 };
 
+// Enhanced User API with full CRUD operations
 export const userAPI = {
     getUsers: () => api.get("/users"),
+    getUser: (id) => api.get(`/users/${id}`),
+    createUser: (userData) => api.post("/users", userData),
+    updateUser: (id, userData) => api.put(`/users/${id}`, userData),
+    deleteUser: (id) => api.delete(`/users/${id}`),
 };
 
 export const statsAPI = {
