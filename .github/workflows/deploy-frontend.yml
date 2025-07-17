@@ -23,6 +23,8 @@ jobs:
 
       - name: Build application
         run: npm run build
+        env:
+          GENERATE_SOURCEMAP: false
 
       - name: Deploy to AWS Server
         uses: appleboy/ssh-action@v1.0.3
@@ -36,7 +38,7 @@ jobs:
             cd /var/www/html/react-demo
             git pull origin main
             npm ci
-            npm run build
+            GENERATE_SOURCEMAP=false npm run build
             sudo chown -R www-data:www-data /var/www/html/react-demo/build
             sudo chmod -R 755 /var/www/html/react-demo/build
             sudo systemctl reload nginx
