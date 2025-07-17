@@ -36,9 +36,10 @@ jobs:
             echo "🚀 Starting Frontend deployment..."
             
             cd /var/www/html/react-demo
+            sudo chown -R ubuntu:ubuntu /var/www/html/react-demo
             git pull origin main
             npm ci
-            GENERATE_SOURCEMAP=false npm run build
+            npm run build
             sudo chown -R www-data:www-data /var/www/html/react-demo/build
             sudo chmod -R 755 /var/www/html/react-demo/build
             sudo systemctl reload nginx
