@@ -24,6 +24,7 @@ jobs:
       - name: Build application
         run: npm run build
         env:
+          REACT_APP_ENV: production
           GENERATE_SOURCEMAP: false
 
       - name: Upload build folder
