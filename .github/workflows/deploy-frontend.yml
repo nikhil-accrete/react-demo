@@ -36,7 +36,6 @@ jobs:
             echo "🚀 Starting Frontend deployment..."
            
             cd /var/www/html/react-demo
-            sudo chown -R ubuntu:ubuntu /var/www/html/react-demo
             git pull origin main
             npm ci
             npm run build
@@ -45,4 +44,4 @@ jobs:
             sudo systemctl reload nginx
             
             echo "✅ Frontend deployment successful!"
-            echo "🌐 Visit: http://65.0.27.141"
+            echo "🌐 Visit: http:/13.203.226.58"
