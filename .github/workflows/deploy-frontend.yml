@@ -1,61 +1,58 @@
 name: Deploy React Frontend
 
 on:
-    push:
-        branches: [main]
+  push:
+    branches: [ main ]
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "22"
-                  cache: "npm"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
 
-            - name: Install dependencies
-              run: npm i
+      - name: Install dependencies
+        run: npm ci
 
-            - name: Build application
-              run: npm run build
-              env:
-                  REACT_APP_ENV: production
-                  GENERATE_SOURCEMAP: false
+      - name: Build application
+        run: npm run build
+        env:
+          REACT_APP_ENV: production
+          GENERATE_SOURCEMAP: false
 
-            - name: Clean previous temp folder on server
-              uses: appleboy/ssh-action@v1.0.3
-              with:
-                  host: ${{ secrets.SERVER_HOST }}
-                  username: ${{ secrets.SERVER_USER }}
-                  key: ${{ secrets.SERVER_SSH_KEY }}
-                  script: |
-                      sudo rm -rf /var/www/html/react-demo/build-temp
+      - name: Clean previous build folder on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "🧹 Cleaning old build folder..."
+            sudo rm -rf /var/www/html/react-demo/build
 
-            - name: Upload new build to temp folder
-              uses: appleboy/scp-action@v0.1.4
-              with:
-                  host: ${{ secrets.SERVER_HOST }}
-                  username: ${{ secrets.SERVER_USER }}
-                  key: ${{ secrets.SERVER_SSH_KEY }}
-                  source: "build/"
-                  target: "/var/www/html/react-demo/build-temp"
+      - name: Upload build folder
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "build/"
+          target: "/var/www/html/react-demo"
 
-            - name: Atomically replace old build and reload Nginx
-              uses: appleboy/ssh-action@v1.0.3
-              with:
-                  host: ${{ secrets.SERVER_HOST }}
-                  username: ${{ secrets.SERVER_USER }}
-                  key: ${{ secrets.SERVER_SSH_KEY }}
-                  script: |
-                      echo "🚚 Replacing old build with new build..."
-                      sudo rm -rf /var/www/html/react-demo/build-old
-                      sudo mv /var/www/html/react-demo/build /var/www/html/react-demo/build-old || true
-                      sudo mv /var/www/html/react-demo/build-temp /var/www/html/react-demo/build
-                      sudo chown -R www-data:www-data /var/www/html/react-demo/build
-                      sudo chmod -R 755 /var/www/html/react-demo/build
-                      sudo systemctl reload nginx
+      - name: Set permissions and reload Nginx
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            sudo chown -R www-data:www-data /var/www/html/react-demo/build
+            sudo chmod -R 755 /var/www/html/react-demo/build
+            sudo systemctl reload nginx
